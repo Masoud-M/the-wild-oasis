@@ -33,7 +33,7 @@ function CabinTable() {
     data: cabins,
     error,
   } = useQuery({
-    queryKey: ["cabin"],
+    queryKey: ["cabins"],
     // queryFn needs to return a promise so we could simply use a fetch() function but we are gonna use our own functions here.
     queryFn: getCabins,
   });
