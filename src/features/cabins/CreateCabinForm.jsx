@@ -31,7 +31,8 @@ function CreateCabinForm() {
   });
 
   function onSubmit(data) {
-    mutate(data);
+    // to add the image file we spread the data and then we need to grab the image file from data, which is the first element in the image object
+    mutate({ ...data, image: data.image[0] });
   }
 
   function onError(errors) {
@@ -109,8 +110,15 @@ function CreateCabinForm() {
         />
       </FormRow>
 
-      <FormRow label="Cabin photo">
-        <FileInput id="image" disabled={isCreating} accept="image/*" />
+      <FormRow label="Cabin photo" error={errors?.image?.message}>
+        <FileInput
+          id="image"
+          disabled={isCreating}
+          accept="image/*"
+          {...register("image", {
+            required: "This field is required",
+          })}
+        />
       </FormRow>
 
       <FormRow>

@@ -61,13 +61,14 @@ function CabinRow({ cabin }) {
     onSuccess: () => {
       toast.success("Cabin successfully Deleted");
 
-      // by invalidating queryClinet cache, it will refetch the data and reload the page
+      // by invalidating queryClient cache, it will refetch the data and reload the page
       queryClient.invalidateQueries({
         queryKey: ["cabins"],
       });
     },
     onError: (err) => toast.error(err.message),
   });
+
   return (
     <TableRow role="row">
       <Img src={image} />
