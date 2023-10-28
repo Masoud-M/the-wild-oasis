@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatCurrency } from "../../utils/helpers";
 import { deleteCabin } from "../../services/apiCabins";
+import toast from "react-hot-toast";
 const TableRow = styled.div`
   display: grid;
   grid-template-columns: 0.6fr 1.8fr 2.2fr 1fr 1fr 1fr;
@@ -58,14 +59,14 @@ function CabinRow({ cabin }) {
     // cuz we were inputting the same value were calling in the function, this is a more simple way to do it
     mutationFn: deleteCabin,
     onSuccess: () => {
-      alert("Cabin successfully Deleted");
+      toast.success("Cabin successfully Deleted");
 
       // by invalidating queryClinet cache, it will refetch the data and reload the page
       queryClient.invalidateQueries({
         queryKey: ["cabins"],
       });
     },
-    onError: (err) => alert(err.message),
+    onError: (err) => toast.error(err.message),
   });
   return (
     <TableRow role="row">
