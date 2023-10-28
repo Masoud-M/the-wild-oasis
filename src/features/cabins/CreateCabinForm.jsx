@@ -1,5 +1,8 @@
 import styled from "styled-components";
 import { useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createCabin } from "../../services/apiCabins";
+import toast from "react-hot-toast";
 
 import Input from "../../ui/Input";
 import Form from "../../ui/Form";
@@ -43,13 +46,28 @@ const Error = styled.span`
   color: var(--color-red-700);
 `;
 
-function onSubmit(data) {
-  console.log(data);
-}
-
 function CreateCabinForm() {
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit, reset } = useForm();
+
+  const queryClient = useQueryClient();
+
+  // useMutation hook gives us access to the mutate function which allows us to mutate the data with the specified mutationFn, in this case the createCabin function that we created. and if it is successful, then using useQueryClient we can get access to the queryClient and invalidate the query with the key of cabins in order to reload the page. and then using the reset function coming from react hook form, resetting the form.
+  const { mutate, isLoading: isCreating } = useMutation({
+    mutationFn: createCabin,
+    onSuccess: () => {
+      toast.success("New cabin successfully created");
+      queryClient.invalidateQueries({ queryKey: ["cabins"] });
+      reset();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  function onSubmit(data) {
+    mutate(data);
+  }
+
   return (
+    // when this form gets submitted, our onSubmit function will be called and the input data will be passed to it.
     <Form onSubmit={handleSubmit(onSubmit)}>
       <FormRow>
         <Label htmlFor="name">Cabin name</Label>
@@ -96,7 +114,7 @@ function CreateCabinForm() {
         <Button variation="secondary" type="reset">
           Cancel
         </Button>
-        <Button>Add cabin</Button>
+        <Button disabled={isCreating}>Add cabin</Button>
       </FormRow>
     </Form>
   );
