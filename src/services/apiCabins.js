@@ -11,21 +11,33 @@ export async function getCabins() {
   return data;
 }
 
-export async function createCabin(newCabin) {
+export async function createEditCabin(newCabin, id) {
+  // if the user does'nt include a new picture while editing the cabin, the path will be started with "supabaseUrl" therefore using the startWith method we can check if the path does start with it or not
+  const hasImagePath = newCabin.image?.startWith?.(supabaseUrl);
+
   // in order to make sure that each image has a uniq name we use Math.random and add it to the name of the file being uploaded. if we the image we are uploading has "/" in its name, supabase will create folder for it, so we replace all the "/" with empty sting "" using replaceAll method
-  const imageName = `${Math.random()}-${newCabin.image.name}`.replaceAll(
-    "/",
-    ""
-  );
+  const imageName = hasImagePath
+    ? newCabin.image
+    : `${Math.random()}-${newCabin.image.name}`.replaceAll("/", "");
 
   // https://bbcprcrjaxmudkhtxpnr.supabase.co/storage/v1/object/public/cabin-images/cabin-001.jpg
   const imagePath = `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`;
 
   // 1. Create cabin
-  const { data, error } = await supabase
-    .from("cabins")
-    .insert([{ ...newCabin, image: imagePath }])
-    .select();
+  let query = supabase.from("cabins");
+
+  // A) CREATE
+  if (!id) query = query.insert([{ ...newCabin, image: imagePath }]);
+
+  // B) EDIT
+  if (id)
+    query = query
+      .update({ ...newCabin, image: imagePath })
+      .eq("id", id)
+      .select();
+
+  const { data, error } = await query.select().single();
+
   if (error) {
     console.error(error);
     throw new Error("cabin could not be created");

@@ -1,7 +1,6 @@
-import styled from "styled-components";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createCabin } from "../../services/apiCabins";
+import { createEditCabin } from "../../services/apiCabins";
 import toast from "react-hot-toast";
 
 import Input from "../../ui/Input";
@@ -11,8 +10,17 @@ import FileInput from "../../ui/FileInput";
 import Textarea from "../../ui/Textarea";
 import FormRow from "../../ui/FormRow";
 
-function CreateCabinForm() {
-  const { register, handleSubmit, reset, getValues, formState } = useForm();
+// giving the income cabinToEdit prop the default value of an object because sometimes it does'nt have any values in it.
+function CreateCabinForm({ cabinToEdit = {} }) {
+  const { id: editId, ...editValues } = cabinToEdit;
+
+  // to specify if we are adding a new cabin or we are editing a cabin, we make a boolean value based on the existence of editId and use it to determine the session
+  const isEditSession = Boolean(editId);
+
+  // if we are editing a cabin, the editing values coming from prop will be the default values of the input form and otherwise they'll be empty
+  const { register, handleSubmit, reset, getValues, formState } = useForm({
+    defaultValues: isEditSession ? editValues : {},
+  });
 
   // formState is an object that we destruct to get the errors so we can show them to the user
   const { errors } = formState;
@@ -20,8 +28,8 @@ function CreateCabinForm() {
   const queryClient = useQueryClient();
 
   // useMutation hook gives us access to the mutate function which allows us to mutate the data with the specified mutationFn, in this case the createCabin function that we created. and if it is successful, then using useQueryClient we can get access to the queryClient and invalidate the query with the key of cabins in order to reload the page. and then using the reset function coming from react hook form, resetting the form.
-  const { mutate, isLoading: isCreating } = useMutation({
-    mutationFn: createCabin,
+  const { mutate: createCabin, isLoading: isCreating } = useMutation({
+    mutationFn: createEditCabin,
     onSuccess: () => {
       toast.success("New cabin successfully created");
       queryClient.invalidateQueries({ queryKey: ["cabins"] });
@@ -30,9 +38,28 @@ function CreateCabinForm() {
     onError: (err) => toast.error(err.message),
   });
 
+  const { mutate: editCabin, isLoading: isEditing } = useMutation({
+    // we can only pass ONE argument to the mutationFn, so that's why we are using destructuring to pass TWO argument to the function
+    mutationFn: ({ newCabinData, id }) => createEditCabin(newCabinData, id),
+    onSuccess: () => {
+      toast.success("Cabin successfully edited");
+      queryClient.invalidateQueries({ queryKey: ["cabins"] });
+      reset();
+    },
+    // onError: (err) => toast.error(err.message),
+    onError: (err) => console.log(err),
+  });
+
+  const isWorking = isCreating || isEditing;
+
   function onSubmit(data) {
+    // if the user upload a new picture, the type of image would be a string, otherwise it would be an object
+    const image = typeof data.image === "string" ? data.image : data.image[0];
+
+    if (isEditSession)
+      editCabin({ newCabinData: { ...data, image }, id: editId });
     // to add the image file we spread the data and then we need to grab the image file from data, which is the first element in the image object
-    mutate({ ...data, image: data.image[0] });
+    else createCabin({ ...data, image: image });
   }
 
   function onError(errors) {
@@ -45,7 +72,7 @@ function CreateCabinForm() {
         <Input
           type="text"
           id="name"
-          disabled={isCreating}
+          disabled={isWorking}
           {...register("name", {
             required: "This field is required",
           })}
@@ -55,7 +82,7 @@ function CreateCabinForm() {
         <Input
           type="number"
           id="maxCapacity"
-          disabled={isCreating}
+          disabled={isWorking}
           {...register("maxCapacity", {
             required: "This field is required",
             min: {
@@ -69,7 +96,7 @@ function CreateCabinForm() {
         <Input
           type="number"
           id="regularPrice"
-          disabled={isCreating}
+          disabled={isWorking}
           {...register("regularPrice", {
             required: "This field is required",
             min: {
@@ -83,7 +110,7 @@ function CreateCabinForm() {
         <Input
           type="number"
           id="discount"
-          disabled={isCreating}
+          disabled={isWorking}
           defaultValue={0}
           {...register("discount", {
             required: "This field is required",
@@ -102,7 +129,7 @@ function CreateCabinForm() {
         <Textarea
           type="number"
           id="description"
-          disabled={isCreating}
+          disabled={isWorking}
           defaultValue=""
           {...register("description", {
             required: "This field is required",
@@ -113,10 +140,11 @@ function CreateCabinForm() {
       <FormRow label="Cabin photo" error={errors?.image?.message}>
         <FileInput
           id="image"
-          disabled={isCreating}
+          disabled={isWorking}
           accept="image/*"
           {...register("image", {
-            required: "This field is required",
+            // when editing a cabin, we don't need the picture to be a requirement and keep it as it is
+            required: isEditSession ? false : "This field is required",
           })}
         />
       </FormRow>
@@ -126,7 +154,9 @@ function CreateCabinForm() {
         <Button variation="secondary" type="reset">
           Cancel
         </Button>
-        <Button disabled={isCreating}>Add cabin</Button>
+        <Button disabled={isWorking}>
+          {isEditSession ? "Edit cabin" : "Create new cabin"}
+        </Button>
       </FormRow>
     </Form>
   );
