@@ -12,16 +12,20 @@ export async function getCabins() {
 }
 
 export async function createEditCabin(newCabin, id) {
-  // if the user does'nt include a new picture while editing the cabin, the path will be started with "supabaseUrl" therefore using the startWith method we can check if the path does start with it or not
-  const hasImagePath = newCabin.image?.startWith?.(supabaseUrl);
+  console.log(newCabin, id);
+  // if the user doesn't include a new picture while editing the cabin, the path will be started with "supabaseUrl" therefore using the startsWith method we can check if the path does start with it or not
+  const hasImagePath = newCabin.image?.startsWith?.(supabaseUrl);
 
   // in order to make sure that each image has a uniq name we use Math.random and add it to the name of the file being uploaded. if we the image we are uploading has "/" in its name, supabase will create folder for it, so we replace all the "/" with empty sting "" using replaceAll method
-  const imageName = hasImagePath
-    ? newCabin.image
-    : `${Math.random()}-${newCabin.image.name}`.replaceAll("/", "");
+  const imageName = `${Math.random()}-${newCabin.image.name}`.replaceAll(
+    "/",
+    ""
+  );
 
   // https://bbcprcrjaxmudkhtxpnr.supabase.co/storage/v1/object/public/cabin-images/cabin-001.jpg
-  const imagePath = `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`;
+  const imagePath = hasImagePath
+    ? newCabin.image
+    : `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`;
 
   // 1. Create cabin
   let query = supabase.from("cabins");
