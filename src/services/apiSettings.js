@@ -17,7 +17,7 @@ export async function updateSetting(newSetting) {
   const { data, error } = await supabase
     .from("settings")
     .update(newSetting)
-    // There is only ONE row of settings, and it has the ID=1, and so this is the updated one
+    // There is only ONE row of settings, and it has the ID=1, and so this is the updated one and that's why we don't need to pass an id and identify which row needs to be updated
     .eq("id", 1)
     .single();
 
