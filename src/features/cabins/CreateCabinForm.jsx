@@ -1,8 +1,7 @@
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createEditCabin } from "../../services/apiCabins";
-import toast from "react-hot-toast";
 
+import { useCreateCabin } from "./useCreateCabin";
+import { useEditCabin } from "./useEditCabin";
 import Input from "../../ui/Input";
 import Form from "../../ui/Form";
 import Button from "../../ui/Button";
@@ -12,6 +11,8 @@ import FormRow from "../../ui/FormRow";
 
 // giving the income cabinToEdit prop the default value of an object because sometimes it does'nt have any values in it.
 function CreateCabinForm({ cabinToEdit = {} }) {
+  const { isCreating, createCabin } = useCreateCabin();
+  const { isEditing, editCabin } = useEditCabin();
   const { id: editId, ...editValues } = cabinToEdit;
 
   // to specify if we are adding a new cabin or we are editing a cabin, we make a boolean value based on the existence of editId and use it to determine the session
@@ -25,31 +26,6 @@ function CreateCabinForm({ cabinToEdit = {} }) {
   // formState is an object that we destruct to get the errors so we can show them to the user
   const { errors } = formState;
 
-  const queryClient = useQueryClient();
-
-  // useMutation hook gives us access to the mutate function which allows us to mutate the data with the specified mutationFn, in this case the createCabin function that we created. and if it is successful, then using useQueryClient we can get access to the queryClient and invalidate the query with the key of cabins in order to reload the page. and then using the reset function coming from react hook form, resetting the form.
-  const { mutate: createCabin, isLoading: isCreating } = useMutation({
-    mutationFn: createEditCabin,
-    onSuccess: () => {
-      toast.success("New cabin successfully created");
-      queryClient.invalidateQueries({ queryKey: ["cabins"] });
-      reset();
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const { mutate: editCabin, isLoading: isEditing } = useMutation({
-    // we can only pass ONE argument to the mutationFn, so that's why we are using destructuring to pass TWO argument to the function
-    mutationFn: ({ newCabinData, id }) => createEditCabin(newCabinData, id),
-    onSuccess: () => {
-      toast.success("Cabin successfully edited");
-      queryClient.invalidateQueries({ queryKey: ["cabins"] });
-      reset();
-    },
-    // onError: (err) => toast.error(err.message),
-    onError: (err) => console.log(err),
-  });
-
   const isWorking = isCreating || isEditing;
 
   function onSubmit(data) {
@@ -57,9 +33,22 @@ function CreateCabinForm({ cabinToEdit = {} }) {
     const image = typeof data.image === "string" ? data.image : data.image[0];
 
     if (isEditSession)
-      editCabin({ newCabinData: { ...data, image }, id: editId });
-    // to add the image file we spread the data and then we need to grab the image file from data, which is the first element in the image object
-    else createCabin({ ...data, image: image });
+      // to add the image file we spread the data and then we need to grab the image file from data, which is the first element in the image object
+      editCabin(
+        { newCabinData: { ...data, image }, id: editId },
+        {
+          // since we couldn't call the reset function in our useCreateCabin hook, we can write onSuccess function here, and it's the same as writing it for the mutate in useMutation. our function here has access to the returned data in our custom hook which we named it data.
+          onSuccess: (data) => reset(),
+        }
+      );
+    else
+      createCabin(
+        { ...data, image: image },
+        {
+          // since we couldn't call the reset function in our useCreateCabin hook, we can write onSuccess function here, and it's the same as writing it for the mutate in useMutation. our function here has access to the returned data in our custom hook which we named it data.
+          onSuccess: (data) => reset(),
+        }
+      );
   }
 
   function onError(errors) {

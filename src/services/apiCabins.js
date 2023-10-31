@@ -12,7 +12,6 @@ export async function getCabins() {
 }
 
 export async function createEditCabin(newCabin, id) {
-  console.log(newCabin, id);
   // if the user doesn't include a new picture while editing the cabin, the path will be started with "supabaseUrl" therefore using the startsWith method we can check if the path does start with it or not
   const hasImagePath = newCabin.image?.startsWith?.(supabaseUrl);
 
