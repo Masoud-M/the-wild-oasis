@@ -2,12 +2,14 @@ import supabase from "./supabase";
 
 export async function getSettings() {
   const { data, error } = await supabase.from("settings").select("*").single();
+  // since there is on;y on row in our setting table, we are using single() method to just return that one object instead of an array
 
   if (error) {
     console.error(error);
     throw new Error("Settings could not be loaded");
   }
   return data;
+  // if we didn't use the single() method while getting our data, we could return that one row with data[0]
 }
 
 // We expect a newSetting object that looks like {setting: newValue}
