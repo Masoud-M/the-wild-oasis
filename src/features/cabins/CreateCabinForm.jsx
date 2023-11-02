@@ -10,7 +10,7 @@ import Textarea from "../../ui/Textarea";
 import FormRow from "../../ui/FormRow";
 
 // giving the income cabinToEdit prop the default value of an object because sometimes it does'nt have any values in it.
-function CreateCabinForm({ cabinToEdit = {} }) {
+function CreateCabinForm({ cabinToEdit = {}, onCloseModal }) {
   const { isCreating, createCabin } = useCreateCabin();
   const { isEditing, editCabin } = useEditCabin();
   const { id: editId, ...editValues } = cabinToEdit;
@@ -38,7 +38,10 @@ function CreateCabinForm({ cabinToEdit = {} }) {
         { newCabinData: { ...data, image }, id: editId },
         {
           // since we couldn't call the reset function in our useCreateCabin hook, we can write onSuccess function here, and it's the same as writing it for the mutate in useMutation. our function here has access to the returned data in our custom hook which we named it data.
-          onSuccess: (data) => reset(),
+          onSuccess: (data) => {
+            reset();
+            onCloseModal?.();
+          },
         }
       );
     else
@@ -46,7 +49,10 @@ function CreateCabinForm({ cabinToEdit = {} }) {
         { ...data, image: image },
         {
           // since we couldn't call the reset function in our useCreateCabin hook, we can write onSuccess function here, and it's the same as writing it for the mutate in useMutation. our function here has access to the returned data in our custom hook which we named it data.
-          onSuccess: (data) => reset(),
+          onSuccess: (data) => {
+            reset();
+            onCloseModal?.();
+          },
         }
       );
   }
@@ -56,7 +62,10 @@ function CreateCabinForm({ cabinToEdit = {} }) {
   }
   return (
     // when this form gets submitted, if all the inputs pass all the validation checks, our onSubmit function will be called and the input data will be passed to it, otherwise if there is an error, our onError function will be called and the error will be passed to it
-    <Form onSubmit={handleSubmit(onSubmit, onError)}>
+    <Form
+      onSubmit={handleSubmit(onSubmit, onError)}
+      type={onCloseModal ? "modal" : "regular"}
+    >
       <FormRow label="Cabin name" error={errors?.name?.message}>
         <Input
           type="text"
@@ -140,7 +149,12 @@ function CreateCabinForm({ cabinToEdit = {} }) {
 
       <FormRow>
         {/* type is an HTML attribute! that resets the form */}
-        <Button variation="secondary" type="reset">
+        <Button
+          variation="secondary"
+          type="reset"
+          // using optional chaining on the callback function for the onCloseModal just in case if this code ever be used somewhere else and the prop doesn't get passed to it
+          onClick={() => onCloseModal?.()}
+        >
           Cancel
         </Button>
         <Button disabled={isWorking}>
