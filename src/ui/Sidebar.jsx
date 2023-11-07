@@ -1,3 +1,4 @@
+import Uploader from "../data/Uploader";
 import styled from "styled-components";
 import Logo from "./Logo";
 import MainNav from "./MainNav";
@@ -18,6 +19,8 @@ function Sidebar() {
     <StyledSidebar>
       <Logo />
       <MainNav />
+
+      <Uploader />
     </StyledSidebar>
   );
 }
