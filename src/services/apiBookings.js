@@ -1,14 +1,19 @@
 import { getToday } from "../utils/helpers";
 import supabase from "./supabase";
 
-export async function getBookings() {
+export async function getBookings({ filter, sortBy }) {
   // with specifying the cabins(name) and guests(fullName, email) keywords in the select method, supabase will return all those columns data for each booking id
   // we could have used select("*, cabins(*), guests(*)") but it would have returned all the data that might have not be necessary
-  const { data, error } = await supabase
+  let query = supabase
     .from("bookings")
     .select(
       "id, created_at, startDate, endDate, numNights, numGuests, status,totalPrice, cabins(name), guests(fullName, email)"
     );
+
+  // FILTER
+  if (filter !== null) query[filter.method || "eq"](filter.field, filter.value);
+
+  const { data, error } = await query;
 
   if (error) {
     console.error(error);
