@@ -26,6 +26,7 @@ export async function getBookings({ filter, sortBy, page }) {
   if (page) {
     const from = (page - 1) * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
+    // range is a method provided by supabase and it will return a certain range of results
     query = query.range(from, to);
   }
 
