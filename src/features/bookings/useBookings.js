@@ -20,15 +20,19 @@ export function useBookings() {
   // method: "gte";
   // //   };
 
+  // SORT
+  const sortByRaw = searchParams.get("sortBy") || "startDate-desc";
+  const [field, direction] = sortByRaw.split("-");
+  const sortBy = { field, direction };
   const {
     isLoading,
     data: bookings,
     error,
   } = useQuery({
-    // filter value in the queryKey in also used like dependency array in useEffect, and it will make the reactQuery to reload the page
-    queryKey: ["bookings", filter],
+    // filter and sortBy values in the queryKey are used like dependency array in useEffect, and it will make the reactQuery to reload the page
+    queryKey: ["bookings", filter, sortBy],
     // queryFn needs to return a promise so we could simply use a fetch() function but we are gonna use our own function here.
-    queryFn: () => getBookings({ filter }),
+    queryFn: () => getBookings({ filter, sortBy }),
   });
 
   return { isLoading, bookings, error };
