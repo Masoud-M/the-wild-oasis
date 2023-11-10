@@ -1,13 +1,16 @@
+import { PAGE_SIZE } from "../utils/constants";
 import { getToday } from "../utils/helpers";
 import supabase from "./supabase";
 
-export async function getBookings({ filter, sortBy }) {
+export async function getBookings({ filter, sortBy, page }) {
   // with specifying the cabins(name) and guests(fullName, email) keywords in the select method, supabase will return all those columns data for each booking id
   // we could have used select("*, cabins(*), guests(*)") but it would have returned all the data that might have not be necessary
+  // the secund argument that we passed into the select as an object with the key value pair of count: "exact" will return the number of the results from supabase, instead of querying the whole data to get the length of it
   let query = supabase
     .from("bookings")
     .select(
-      "id, created_at, startDate, endDate, numNights, numGuests, status,totalPrice, cabins(name), guests(fullName, email)"
+      "id, created_at, startDate, endDate, numNights, numGuests, status,totalPrice, cabins(name), guests(fullName, email)",
+      { count: "exact" }
     );
 
   // FILTER
@@ -18,15 +21,20 @@ export async function getBookings({ filter, sortBy }) {
     query = query.order(sortBy.field, {
       ascending: sortBy.direction === "asc",
     });
+  if (page) {
+    const from = (page - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    query = query.range(from, to);
+  }
 
-  const { data, error } = await query;
+  const { data, error, count } = await query;
 
   if (error) {
     console.error(error);
     throw new Error("Bookings could not be loaded");
   }
 
-  return data;
+  return { data, count };
 }
 
 export async function getBooking(id) {
