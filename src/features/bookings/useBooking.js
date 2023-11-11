@@ -10,7 +10,7 @@ export function useBooking() {
     data: booking,
     error,
   } = useQuery({
-    queryKey: ["booking"],
+    queryKey: ["booking", bookingId],
     // queryFn needs to return a promise so we could simply use a fetch() function but we are gonna use our own functions here.
     queryFn: () => getBooking(bookingId),
     // by default reactQuery will try to fetch the data 3 times but it doesn't make that much sense here so we turned it off
