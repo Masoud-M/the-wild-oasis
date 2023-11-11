@@ -8,10 +8,12 @@ export function useCheckin() {
   const navigate = useNavigate();
 
   const { mutate: checkin, isLoading: isCheckingIn } = useMutation({
-    mutationFn: (bookingId) =>
+    mutationFn: ({ bookingId, breakfast }) =>
       updateBooking(bookingId, {
         status: "checked-in",
         isPaid: true,
+        ...breakfast,
+        // hasBreakfast, extrasPrice and totalPrice coming from breakfast object are getting spread and added to object and be sent to supabase to update the table
       }),
 
     // the data is the returned value of mutationFn
