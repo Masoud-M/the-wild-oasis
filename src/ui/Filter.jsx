@@ -41,6 +41,10 @@ function Filter({ filterField, options }) {
 
   function handleClick(value) {
     searchParams.set(filterField, value);
+
+    // fixed the bug that if you were at the last page in bookings and tried to change the filter to the unconfirmed, it would brake the app(An offset of 20 was requested, but there are only 10 rows). the fix is to reset the page to 1 whenever the filter changes
+    if (searchParams.get("page")) searchParams.set("page", 1);
+
     setSearchParams(searchParams);
   }
 
