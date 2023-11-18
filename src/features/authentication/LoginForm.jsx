@@ -16,7 +16,16 @@ function LoginForm() {
 
     if (!email || !password) return;
 
-    login({ email, password });
+    // since we can't add the onSettled handler into the useLogin and don't have access to the state variables there, we pass it into this login function, cuz it is actually a mutate function and can have other objects as options. so we use it to reset the input fields
+    login(
+      { email, password },
+      {
+        onSettled: () => {
+          setEmail("");
+          setPassword("");
+        },
+      }
+    );
   }
 
   return (
