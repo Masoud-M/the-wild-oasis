@@ -26,3 +26,9 @@ export async function getCurrentUser() {
   // we are only interested in user data so we just return that part of data
   return data?.user;
 }
+
+export async function logout() {
+  const { error } = await supabase.auth.signOut();
+
+  if (error) throw new Error(error.message);
+}
