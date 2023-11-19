@@ -1,5 +1,23 @@
 import supabase from "./supabase";
 
+export async function singup({ fullName, email, password }) {
+  const { data, error } = await supabase.auth.signUp({
+    // this will usually receive email and password but we can also pass in an options object which can have a data object that we pass any other information we want
+    email,
+    password,
+    options: {
+      data: {
+        fullName,
+        avatar: "",
+      },
+    },
+  });
+
+  if (error) throw new Error(error.message);
+
+  return data;
+}
+
 export async function login({ email, password }) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
