@@ -2,26 +2,70 @@ import Button from "../../ui/Button";
 import Form from "../../ui/Form";
 import FormRow from "../../ui/FormRow";
 import Input from "../../ui/Input";
-
+import { useForm } from "react-hook-form";
 // Email regex: /\S+@\S+\.\S+/
 
 function SignupForm() {
+  const { register, formState, getValues, handleSubmit } = useForm();
+  const { errors } = formState;
+
+  function onSubmit(data) {
+    console.log(data);
+  }
+
   return (
-    <Form>
-      <FormRow label="Full name" error={""}>
-        <Input type="text" id="fullName" />
+    <Form onSubmit={handleSubmit(onSubmit)}>
+      <FormRow label="Full name" error={errors?.fullName?.message}>
+        <Input
+          type="text"
+          id="fullName"
+          {...register("fullname", { required: "This field is required" })}
+        />
       </FormRow>
 
-      <FormRow label="Email address" error={""}>
-        <Input type="email" id="email" />
+      <FormRow label="Email address" error={errors?.email?.message}>
+        <Input
+          type="email"
+          id="email"
+          {...register("email", {
+            required: "This field is required",
+            // using pattern we can specify a value and validate the email type with it
+            pattern: {
+              value: /\S+@\S+\.\S+/,
+              message: "Please provide a valid email address",
+            },
+          })}
+        />
       </FormRow>
 
-      <FormRow label="Password (min 8 characters)" error={""}>
-        <Input type="password" id="password" />
+      <FormRow
+        label="Password (min 8 characters)"
+        error={errors?.password?.message}
+      >
+        <Input
+          type="password"
+          id="password"
+          {...register("password", {
+            required: "This field is required",
+            minLength: {
+              value: 8,
+              message: "Password needs a minimum of 8 characters",
+            },
+          })}
+        />
       </FormRow>
 
-      <FormRow label="Repeat password" error={""}>
-        <Input type="password" id="passwordConfirm" />
+      <FormRow label="Repeat password" error={errors?.passwordConfirm?.message}>
+        <Input
+          type="password"
+          id="passwordConfirm"
+          {...register("passwordConfirm", {
+            required: "This field is required",
+            // validate function comes with react hook form and it has access to the input value and we compare it to the value of the password input which we get access to with the getValues function coming from react hook form. if they are equal, the validation will pass and otherwise it will show the message we provided
+            validate: (value) =>
+              value === getValues().password || "Passwords need to match",
+          })}
+        />
       </FormRow>
 
       <FormRow>
