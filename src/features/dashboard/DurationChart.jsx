@@ -115,6 +115,11 @@ const startDataDark = [
 ];
 
 function prepareData(startData, stays) {
+  // first we check to see if the dark mode is on or not and based on that choose our start data.
+  // we check the number of numNights and based on that pass the "startData" as an ARRAY and a "field" and a STRING to the incArrayValue function
+  // incArrayValue will compare the "field" with the duration in each element inside the startData and it will increase the value of the element that matches the field
+  // for example in the first iteration, the "num" would be 2 so incArrayValue(startDate, "2 nights") and it will increase the value of second element in the startData object by 1
+  // at the end the data will be filtered and the elements that have value of ZERO will be removed to not be shown on the chart
   function incArrayValue(arr, field) {
     return arr.map((obj) =>
       obj.duration === field ? { ...obj, value: obj.value + 1 } : obj
@@ -124,6 +129,7 @@ function prepareData(startData, stays) {
   const data = stays
     .reduce((arr, cur) => {
       const num = cur.numNights;
+
       if (num === 1) return incArrayValue(arr, "1 night");
       if (num === 2) return incArrayValue(arr, "2 nights");
       if (num === 3) return incArrayValue(arr, "3 nights");
