@@ -90,6 +90,7 @@ export async function getStaysAfterDate(date) {
 
 // Activity means that there is a check in or a check out today
 export async function getStaysTodayActivity() {
+  // the "or" function blow receives a string that separated by a coma, and works just like a javascript "||" function. and we can nest "and" function inside it as well
   const { data, error } = await supabase
     .from("bookings")
     .select("*, guests(fullName, nationality, countryFlag)")
