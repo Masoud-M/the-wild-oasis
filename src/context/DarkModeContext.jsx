@@ -3,6 +3,7 @@ import { useLocalStorageState } from "../hooks/useLocalStorageState";
 const DarkModeContext = createContext();
 
 function DarkModeProvider({ children }) {
+  // instead of window.matchMedia("(prefers-color-scheme: dark)") we could have just passed a true or false for the initial value and then the suer could decide about the dark mode but with this, it will set the dark mode based on the user preference color scheme
   const [isDarkMode, setIsDarkMode] = useLocalStorageState(
     window.matchMedia("(prefers-color-scheme: dark)"),
     "isDarkMode"
