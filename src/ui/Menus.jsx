@@ -87,6 +87,9 @@ function Toggle({ id }) {
   const { openId, open, close, setPosition } = useContext(MenusContext);
 
   function handleClick(e) {
+    // this will stop the event to go further in the DOM and not be detected as a click outside
+    e.stopPropagation();
+
     // this gives us the positions of the element so we can calculate and set the menu icon dynamically for each cabin row
     const rect = e.target.closest("button").getBoundingClientRect();
     setPosition({
@@ -109,7 +112,9 @@ function Toggle({ id }) {
 
 function List({ id, children }) {
   const { openId, position, close } = useContext(MenusContext);
-  const ref = useOutsideClick(close);
+  // passing "false" as the second argument will change the behavior from capturing phase to the default bubble phase and avoid the bug where the element gets close and immediately open after cuz it detects the click twice as a normal click and an outside click
+  // make sure to use "e.stopPropagation()" in the eventHandler otherwise it would cause the opposite problem where the element won't be open
+  const ref = useOutsideClick(close, false);
 
   if (openId !== id) return null;
 
